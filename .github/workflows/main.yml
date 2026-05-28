@@ -1,0 +1,38 @@
+name: Auto Update VPNine1 Subscriptions
+
+on:
+  schedule:
+    - cron: '3 */2 * * *' # هر ۶ ساعت یک‌بار به صورت خودکار اجرا می‌شود
+  workflow_dispatch: # امکان اجرای دستی از تب Actions را فراهم می‌کند
+
+jobs:
+  build-and-update:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests pyyaml
+
+    - name: Create sub directory
+      run: mkdir -p sub
+
+    - name: Run Dedup Script
+      run: python main.py # فرض بر این است که نام فایل پایتون شما main.py است
+
+    - name: Commit and Push Changes
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add sub/sub
+        git commit -m "Update sub: @VPNine1" || echo "هیچ تغییری برای کامیت وجود ندارد"
+        git push
