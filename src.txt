@@ -1,3 +1,3 @@
-https://shz.al/~yaml
+https://shz.al/BAjk
 https://raw.githubusercontent.com/Pawdroid/Free-servers/refs/heads/main/sub
 https://github.com/go4sharing/sub/raw/refs/heads/main/clash.yaml
