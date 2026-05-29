@@ -1,6 +1,7 @@
 import os
 import requests
 import base64
+import yaml
 import json
 import urllib.parse
 import time
@@ -9,25 +10,22 @@ import time
 # ⚙️ تنظیمات اصلی
 # ==========================================
 SRC_FILE = "src.txt"
-OUTPUT_FILE = "sub/sub"  # فایل نهایی بدون پسوند ذخیره می‌شود (دیکود شده)
+OUTPUT_FILE = "sub/sub"
 REMARK_TEMPLATE = "{index}. @VPNine1 - {flag}"
-
-# مبدل عمومی برای تبدیل بی‌نقص فایل‌های YAML کلش به لینک‌های استاندارد
-SUBCONVERTER_API = "https://sub.v1.mk/sub?target=v2ray&url="
 
 LOCATION_CACHE = {}
 
 # ==========================================
-# 🛠 توابع کمکی
+# 🛠 توابع کمکی پایه
 # ==========================================
 
 def get_country_flag(ip_or_domain):
-    """دریافت پرچم با کش و تاخیر برای جلوگیری از بن شدن توسط API (محدودیت ۴۵ درخواست در دقیقه)"""
+    """دریافت پرچم با کش و توقف کوتاه برای جلوگیری از لیمیت شدن API"""
     if ip_or_domain in LOCATION_CACHE:
         return LOCATION_CACHE[ip_or_domain]
     
     try:
-        time.sleep(1.4) # توقف کوتاه برای جلوگیری از خطای 429 Too Many Requests
+        time.sleep(1.2) # تاخیر برای جلوگیری از بن شدن توسط API
         response = requests.get(f"http://ip-api.com/json/{ip_or_domain}?fields=countryCode", timeout=5)
         if response.status_code == 200:
             data = response.json()
@@ -59,11 +57,114 @@ def encode_base64(text):
     return base64.b64encode(text.encode('utf-8')).decode('utf-8')
 
 # ==========================================
-# 🔍 استخراج ایمن سرور و پورت بدون تخریب لینک
+# 🧠 مبدل بومی (Middleware) کلش به V2ray
+# ==========================================
+
+def clash_to_uri(proxy):
+    """تبدیل دقیق ساختار YAML کلش به لینک‌های استاندارد"""
+    try:
+        p_type = proxy.get('type')
+        name = str(proxy.get('name', 'Proxy'))
+        server = str(proxy.get('server', ''))
+        port = str(proxy.get('port', ''))
+        
+        if not server or not port: return None
+
+        # --- پردازش VMESS ---
+        if p_type == 'vmess':
+            v_json = {
+                "v": "2", "ps": name, "add": server, "port": port,
+                "id": str(proxy.get('uuid', '')),
+                "aid": str(proxy.get('alterId', 0)),
+                "scy": proxy.get('cipher', 'auto'),
+                "net": proxy.get('network', 'tcp'),
+                "type": "none", "host": "", "path": "", "tls": "",
+                "sni": proxy.get('servername', '')
+            }
+            
+            if proxy.get('tls'): v_json['tls'] = "tls"
+            
+            # تنظیمات وب‌سوکت
+            if v_json['net'] == 'ws':
+                ws_opts = proxy.get('ws-opts', {})
+                v_json['path'] = ws_opts.get('path', '/')
+                v_json['host'] = ws_opts.get('headers', {}).get('Host', '')
+                
+            # تنظیمات gRPC
+            if v_json['net'] == 'grpc':
+                v_json['path'] = proxy.get('grpc-opts', {}).get('grpc-service-name', '')
+
+            return "vmess://" + encode_base64(json.dumps(v_json, separators=(',', ':')))
+
+        # --- پردازش VLESS ---
+        elif p_type == 'vless':
+            uuid = str(proxy.get('uuid', ''))
+            params = {"type": proxy.get('network', 'tcp')}
+            
+            if proxy.get('servername'): params['sni'] = proxy.get('servername')
+            if proxy.get('flow'): params['flow'] = proxy.get('flow')
+
+            # تنظیمات Reality و TLS
+            if proxy.get('reality-opts'):
+                params['security'] = 'reality'
+                ro = proxy.get('reality-opts', {})
+                params['pbk'] = ro.get('public-key', '')
+                params['fp'] = proxy.get('client-fingerprint', 'chrome')
+                if ro.get('short-id'): params['sid'] = ro.get('short-id')
+            elif proxy.get('tls'):
+                params['security'] = 'tls'
+                params['fp'] = proxy.get('client-fingerprint', 'chrome')
+
+            # وب‌سوکت
+            if params['type'] == 'ws':
+                ws_opts = proxy.get('ws-opts', {})
+                params['path'] = ws_opts.get('path', '/')
+                if 'headers' in ws_opts and 'Host' in ws_opts['headers']:
+                    params['host'] = ws_opts['headers']['Host']
+
+            # gRPC
+            if params['type'] == 'grpc':
+                params['serviceName'] = proxy.get('grpc-opts', {}).get('grpc-service-name', '')
+
+            query = urllib.parse.urlencode({k: v for k, v in params.items() if v})
+            return f"vless://{uuid}@{server}:{port}?{query}#{urllib.parse.quote(name)}"
+
+        # --- پردازش TROJAN ---
+        elif p_type == 'trojan':
+            password = str(proxy.get('password', ''))
+            params = {"type": proxy.get('network', 'tcp')}
+            
+            if proxy.get('sni') or proxy.get('servername'):
+                params['sni'] = proxy.get('sni', proxy.get('servername'))
+                
+            if proxy.get('skip-cert-verify') is not None or proxy.get('tls', True):
+                params['security'] = 'tls'
+
+            # وب‌سوکت
+            if params['type'] == 'ws':
+                ws_opts = proxy.get('ws-opts', {})
+                params['path'] = ws_opts.get('path', '/')
+                if 'headers' in ws_opts and 'Host' in ws_opts['headers']:
+                    params['host'] = ws_opts['headers']['Host']
+
+            # gRPC
+            if params['type'] == 'grpc':
+                params['serviceName'] = proxy.get('grpc-opts', {}).get('grpc-service-name', '')
+
+            query = urllib.parse.urlencode({k: v for k, v in params.items() if v})
+            return f"trojan://{password}@{server}:{port}?{query}#{urllib.parse.quote(name)}"
+
+    except Exception as e:
+        print(f"⚠️ خطا در تبدیل یک گره: {e}")
+        return None
+    return None
+
+# ==========================================
+# 🔍 پردازش نهایی و تغییر نام
 # ==========================================
 
 def get_server_and_port(uri):
-    """استخراج سرور و پورت به عنوان کلید یونیک برای حذف تکرار عمیق"""
+    """استخراج سرور و پورت برای حذف تکرار عمیق"""
     if uri.startswith("vmess://"):
         try:
             data = json.loads(decode_base64(uri[8:]))
@@ -72,7 +173,6 @@ def get_server_and_port(uri):
             return None, None
     else:
         try:
-            # حذف بخش remark برای پارس کردن دقیق
             base_uri = uri.split('#')[0] if '#' in uri else uri
             parsed = urllib.parse.urlparse(base_uri)
             return parsed.hostname, str(parsed.port)
@@ -80,39 +180,35 @@ def get_server_and_port(uri):
             return None, None
 
 def apply_new_remark(uri, index, flag):
-    """تغییر نام کانفیگ بدون دستکاری تنظیمات اتصال"""
+    """تغییر نام گره‌ها"""
     new_name = REMARK_TEMPLATE.format(index=index, flag=flag)
     
     if uri.startswith("vmess://"):
         try:
             data = json.loads(decode_base64(uri[8:]))
             data['ps'] = new_name
-            # تبدیل مجدد به جیسون و انکود بدون تخریب کاراکترها
-            json_str = json.dumps(data, ensure_ascii=False)
-            return "vmess://" + encode_base64(json_str)
+            return "vmess://" + encode_base64(json.dumps(data, separators=(',', ':')))
         except:
             return uri
     else:
         try:
             base_uri = uri.split('#')[0]
-            # فقط نام جدید انکود شده و به انتهای لینک متصل می‌شود
             return f"{base_uri}#{urllib.parse.quote(new_name)}"
         except:
             return uri
 
 # ==========================================
-# 🚀 هسته اصلی اسکریپت
+# 🚀 اجرای برنامه
 # ==========================================
 
-def get_sub_links():
+def process_subscriptions():
     if not os.path.exists(SRC_FILE):
         print(f"❌ فایل {SRC_FILE} یافت نشد!")
-        return []
+        return
+        
     with open(SRC_FILE, 'r', encoding='utf-8') as f:
-        return [line.strip() for line in f if line.strip() and not line.startswith('#')]
+        sub_links = [line.strip() for line in f if line.strip() and not line.startswith('#')]
 
-def process_subscriptions():
-    sub_links = get_sub_links()
     if not sub_links: return
 
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
@@ -125,18 +221,18 @@ def process_subscriptions():
             response = requests.get(link, timeout=15)
             text = response.text.strip()
             
-            # تشخیص فایل کلش (YAML)
+            # اگر فایل کلش باشد (YAML)
             if "proxies:" in text or text.startswith("port:"):
-                print(f"🔄 فایل کلش شناسایی شد، در حال تبدیل استاندارد: {link}")
-                # استفاده از API برای تبدیل بی‌نقص فایل کلش به Base64
-                encoded_url = urllib.parse.quote(link)
-                api_res = requests.get(f"{SUBCONVERTER_API}{encoded_url}", timeout=20)
-                decoded = decode_base64(api_res.text.strip())
-                all_raw_uris.extend(decoded.splitlines())
+                print(f"🔄 در حال ترجمه مستقیم فایل کلش در داخل کد: {link}")
+                yaml_data = yaml.safe_load(text)
+                for proxy in yaml_data.get('proxies', []):
+                    converted_uri = clash_to_uri(proxy)
+                    if converted_uri:
+                        all_raw_uris.append(converted_uri)
             else:
-                # پردازش فایل‌های Base64 یا پلین‌تکست معمولی
+                # پردازش ساب‌های بیس۶۴ یا معمولی
                 decoded = decode_base64(text)
-                if decoded and ("vmess://" in decoded or "vless://" in decoded or "trojan://" in decoded):
+                if decoded and any(proto in decoded for proto in ["vmess://", "vless://", "trojan://"]):
                     all_raw_uris.extend(decoded.splitlines())
                 else:
                     all_raw_uris.extend(text.splitlines())
@@ -144,14 +240,13 @@ def process_subscriptions():
         except Exception as e:
             print(f"❌ خطا در دریافت لینک {link}: {e}")
 
-    print(f"\n✅ تعداد کل کانفیگ‌های استخراج شده (قبل از فیلتر): {len(all_raw_uris)}")
-    print("🔄 در حال حذف تکرار عمیق (Deep Dedup)...")
+    print(f"\n✅ مجموع کانفیگ‌ها استخراج شده: {len(all_raw_uris)}")
+    print("🔄 در حال فیلتر و حذف تکراری‌ها (Deep Dedup)...")
 
-    # مرحله اول: استخراج کانفیگ‌های یونیک بر اساس آی‌پی و پورت
     unique_configs = {}
     for uri in all_raw_uris:
         uri = uri.strip()
-        if not uri or not uri.startswith(("vmess://", "vless://", "trojan://", "ss://", "hysteria2://", "tuic://")): 
+        if not uri or not uri.startswith(("vmess://", "vless://", "trojan://")): 
             continue
             
         server, port = get_server_and_port(uri)
@@ -160,13 +255,12 @@ def process_subscriptions():
             if dedup_key not in unique_configs:
                 unique_configs[dedup_key] = (server, uri)
 
-    print(f"✅ تعداد کانفیگ‌های یونیک یافت شده: {len(unique_configs)}")
-    print("🌐 در حال دریافت پرچم کشورها و بازنویسی نام‌ها (این مرحله کمی زمان‌بر است)...")
+    print(f"✅ تعداد کانفیگ‌های بدون تکرار: {len(unique_configs)}")
+    print("🌐 در حال تشخیص پرچم کشورها (کمی زمان‌بر است)...")
 
     final_uris = []
     index = 1
     
-    # مرحله دوم: اعمال تغییر نام فقط روی کانفیگ‌های یونیک
     for dedup_key, (server, uri) in unique_configs.items():
         flag = get_country_flag(server)
         new_uri = apply_new_remark(uri, index, flag)
@@ -174,12 +268,11 @@ def process_subscriptions():
         print(f"✔️ پردازش شد: {index}. [{dedup_key}] - {flag}")
         index += 1
 
-    # ذخیره در فایل به صورت خام و دیکود شده (هر لینک در یک خط)
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         f.write('\n'.join(final_uris))
         
-    print(f"\n🎉 پردازش تمام شد! تعداد نهایی بدون تکرار: {len(final_uris)}")
-    print(f"📁 فایل خروجی دیکود شده: {OUTPUT_FILE}")
+    print(f"\n🎉 با موفقیت به پایان رسید! تعداد نهایی: {len(final_uris)}")
+    print(f"📁 فایل خروجی دیکود شده در مسیر: {OUTPUT_FILE} ذخیره شد.")
 
 if __name__ == "__main__":
     process_subscriptions()
