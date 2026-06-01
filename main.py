@@ -5,6 +5,7 @@ import yaml
 import json
 import urllib.parse
 import time
+import sys
 
 # ==========================================
 # ⚙️ تنظیمات اصلی
@@ -41,7 +42,6 @@ def get_country_flag(ip_or_domain):
 
 def decode_base64(data):
     data = data.strip()
-    # اصلاح پدینگ
     data = data + '=' * (-len(data) % 4)
     try:
         return base64.b64decode(data).decode('utf-8')
@@ -179,7 +179,6 @@ def clash_to_uri(proxy):
 # ==========================================
 
 def get_server_and_port(uri):
-    """استخراج سرور و پورت با پشتیبانی از SS قدیمی، جدید و HTTP"""
     if uri.startswith("vmess://"):
         try:
             data = json.loads(decode_base64(uri[8:]))
@@ -202,7 +201,6 @@ def get_server_and_port(uri):
             return None, None
             
     else:
-        # vless, trojan, http و https
         try:
             base_uri = uri.split('#')[0] if '#' in uri else uri
             parsed = urllib.parse.urlparse(base_uri)
@@ -221,7 +219,6 @@ def apply_new_remark(uri, index, flag):
         except:
             return uri
     else:
-        # برای vless, trojan, ss, http و https
         try:
             base_uri = uri.split('#')[0]
             return f"{base_uri}#{urllib.parse.quote(new_name)}"
@@ -240,17 +237,29 @@ def process_subscriptions():
     with open(SRC_FILE, 'r', encoding='utf-8') as f:
         sub_links = [line.strip() for line in f if line.strip() and not line.startswith('#')]
 
-    if not sub_links: return
+    if not sub_links: 
+        print("⚠️ هیچ لینکی در فایل منابع یافت نشد.")
+        return
 
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     all_raw_uris = []
     
-    print("📥 در حال دریافت و استخراج کانفیگ‌ها...")
+    print("\n📥 [۱/۳] در حال بررسی و دریافت لینک‌های ساب...")
+    total_links = len(sub_links)
     
-    for link in sub_links:
+    for idx, link in enumerate(sub_links, 1):
+        # نمایش وضعیت بررسی زنده برای تک‌تک لینک‌ها
+        short_link = link if len(link) <= 60 else link[:57] + "..."
+        print(f" ⏳ [{idx}/{total_links}] در حال بررسی: {short_link} -> ", end="", flush=True)
+        
         try:
             response = requests.get(link, timeout=15)
+            if response.status_code != 200:
+                print(f"❌ خطا (کد وضعیت: {response.status_code})")
+                continue
+                
             text = response.text.strip()
+            count_before = len(all_raw_uris)
             
             if "proxies:" in text or text.startswith("port:"):
                 yaml_data = yaml.safe_load(text)
@@ -260,22 +269,25 @@ def process_subscriptions():
                         all_raw_uris.append(converted_uri)
             else:
                 decoded = decode_base64(text)
-                # اضافه شدن پروتکل‌های http و https به لیست جستجو در محتوای دیکود شده
                 if decoded and any(proto in decoded for proto in ["vmess://", "vless://", "trojan://", "ss://", "http://", "https://"]):
                     all_raw_uris.extend(decoded.splitlines())
                 else:
                     all_raw_uris.extend(text.splitlines())
-                print(f"✔️ ساب دریافت شد: {link}")
+            
+            extracted = len(all_raw_uris) - count_before
+            print(f"✅ موفق ({extracted} کانفیگ استخراج شد)")
+            
         except Exception as e:
-            print(f"❌ خطا در دریافت لینک {link}: {e}")
+            print(f"❌ خطا در اتصال ({str(e)[:30]})")
 
-    print(f"\n✅ مجموع کانفیگ‌ها استخراج شده: {len(all_raw_uris)}")
-    print("🔄 در حال فیلتر و حذف تکراری‌ها (Deep Dedup)...")
+    if not all_raw_uris:
+        print("\n❌ هیچ کانفیگی یافت نشد عملیات متوقف شد.")
+        return
 
+    print(f"\n🔄 [۲/۳] در حال فیلتر و حذف تکراری‌ها (Deep Dedup)...")
     unique_configs = {}
     for uri in all_raw_uris:
         uri = uri.strip()
-        # فیلتر برای پروتکل‌های مجاز (شامل http:// و https://)
         if not uri or not uri.startswith(("vmess://", "vless://", "trojan://", "ss://", "http://", "https://")): 
             continue
             
@@ -285,24 +297,36 @@ def process_subscriptions():
             if dedup_key not in unique_configs:
                 unique_configs[dedup_key] = (server, uri)
 
-    print(f"✅ تعداد کانفیگ‌های بدون تکرار: {len(unique_configs)}")
-    print("🌐 در حال تشخیص پرچم کشورها (کمی زمان‌بر است)...")
-
+    total_unique = len(unique_configs)
+    print(f" ✅ تعداد کانفیگ‌های بدون تکرار و خالص: {total_unique}")
+    
+    print("\n🌐 [۳/۳] در حال تشخیص پرچم کشورها (Geolocation)...")
     final_uris = []
     index = 1
     
     for dedup_key, (server, uri) in unique_configs.items():
+        # ساخت نوار پیشرفت پویا (Progress Bar)
+        percent = int((index / total_unique) * 100)
+        bar_length = 30
+        filled_length = int(bar_length * index // total_unique)
+        bar = '█' * filled_length + '░' * (bar_length - filled_length)
+        
+        # چاپ وضعیت به روز رسانی خط به صورت ریل‌تایم با \r
+        sys.stdout.write(f"\r 🔄 پیشرفت عملیات: |{bar}| {percent}% ({index}/{total_unique}) [سرور فعلی: {server[:15]}]")
+        sys.stdout.flush()
+        
         flag = get_country_flag(server)
         new_uri = apply_new_remark(uri, index, flag)
         final_uris.append(new_uri)
-        print(f"✔️ پردازش شد: {index}. [{dedup_key}] - {flag}")
         index += 1
+
+    print("\n ✅ پردازش پرچم‌ها با موفقیت کامل شد.")
 
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         f.write('\n'.join(final_uris))
         
-    print(f"\n🎉 با موفقیت به پایان رسید! تعداد نهایی: {len(final_uris)}")
-    print(f"📁 فایل خروجی دیکود شده در مسیر: {OUTPUT_FILE} ذخیره شد.")
+    print(f"\n🎉 با موفقیت به پایان رسید! تعداد کل کانفیگ‌های نهایی: {len(final_uris)}")
+    print(f"📁 فایل خروجی دیکود شده در مسیر: {OUTPUT_FILE} ذخیره شد.\n")
 
 if __name__ == "__main__":
     process_subscriptions()
