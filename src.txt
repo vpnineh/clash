@@ -10,3 +10,4 @@ https://github.com/suiyuan8/clash/raw/refs/heads/main/%F0%9F%87%B7%F0%9F%87%B4RO
 https://github.com/suiyuan8/clash/raw/refs/heads/main/%F0%9F%87%BA%F0%9F%87%B8US_138.199.35(26http)
 https://github.com/suiyuan8/clash/raw/refs/heads/main/%F0%9F%87%BA%F0%9F%87%B8US_156.146.59(48https)
 https://shz.al/~WangCai
+https://raw.githubusercontent.com/wlunlocker/anti-rkn/9d752f2006c8e50b6d06065e22d3bb12fe61e245/vpnstable.txt
