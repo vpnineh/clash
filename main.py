@@ -4,41 +4,76 @@ import base64
 import yaml
 import json
 import urllib.parse
-import time
 import sys
+import socket
+import geoip2.database
+from concurrent.futures import ThreadPoolExecutor
 
 # ==========================================
 # ⚙️ تنظیمات اصلی
 # ==========================================
 SRC_FILE = "src.txt"
 OUTPUT_FILE = "sub/sub"
-REMARK_TEMPLATE = "{index}. @VPNine1 - {flag}"
+BRAND_NAME = "@VPNine1"
+MAX_THREADS = 50
 
-LOCATION_CACHE = {}
+# مسیر فایل‌های دیتابیس آفلاین
+CITY_DB_PATH = "GeoLite2-City.mmdb"
+ASN_DB_PATH = "GeoLite2-ASN.mmdb"
+
+GEO_CACHE = {}
+VALID_PROTOCOLS = ("vmess://", "vless://", "trojan://", "ss://", "http://", "https://", "hysteria://", "hysteria2://", "hy2://")
 
 # ==========================================
-# 🛠 توابع کمکی پایه
+# 🛠 توابع پردازش Geo و شبکه
 # ==========================================
 
-def get_country_flag(ip_or_domain):
-    if ip_or_domain in LOCATION_CACHE:
-        return LOCATION_CACHE[ip_or_domain]
+def clean_isp_name(isp):
+    if not isp: return "Unknown"
+    remove_words = [' LLC', ' Inc.', ' Ltd.', ' Corporation', ' Corp.', ' GmbH', ' AS', ' PLC', ' OOO', ' S.A.', ' S.R.O.']
+    for word in remove_words:
+        isp = isp.replace(word, '').replace(word.lower(), '')
+    cleaned = isp.split(',')[0].strip()
+    return cleaned[:15]
+
+def get_geo_info(server):
+    if server in GEO_CACHE:
+        return GEO_CACHE[server]
+        
+    cc = "UN"
+    flag = "🏴"
+    datacenter = "Unknown"
     
     try:
-        time.sleep(1.2) # جلوگیری از لیمیت شدن API (ip-api.com)
-        response = requests.get(f"http://ip-api.com/json/{ip_or_domain}?fields=countryCode", timeout=5)
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("countryCode"):
-                cc = data["countryCode"].upper()
-                flag = chr(ord(cc[0]) + 127397) + chr(ord(cc[1]) + 127397)
-                LOCATION_CACHE[ip_or_domain] = flag
-                return flag
+        ip = socket.gethostbyname(server)
     except:
-        pass
-    
-    LOCATION_CACHE[ip_or_domain] = "🏴"
-    return "🏴"
+        GEO_CACHE[server] = (flag, cc, datacenter)
+        return flag, cc, datacenter
+
+    if os.path.exists(CITY_DB_PATH):
+        try:
+            with geoip2.database.Reader(CITY_DB_PATH) as reader:
+                response = reader.city(ip)
+                if response.country.iso_code:
+                    cc = response.country.iso_code
+                    flag = chr(ord(cc[0]) + 127397) + chr(ord(cc[1]) + 127397)
+        except: pass
+
+    if os.path.exists(ASN_DB_PATH):
+        try:
+            with geoip2.database.Reader(ASN_DB_PATH) as reader:
+                response = reader.asn(ip)
+                if response.autonomous_system_organization:
+                    datacenter = clean_isp_name(response.autonomous_system_organization)
+        except: pass
+
+    result = (flag, cc, datacenter)
+    GEO_CACHE[server] = result
+    return result
+
+# ==========================================
+# 🧠 مبدل بومی تمام پروتکل‌ها به V2ray/Xray URIs
+# ==========================================
 
 def decode_base64(data):
     data = data.strip()
@@ -48,35 +83,27 @@ def decode_base64(data):
     except:
         try:
             return base64.urlsafe_b64decode(data).decode('utf-8')
-        except:
-            return ""
+        except: return ""
 
 def encode_base64(text):
     return base64.b64encode(text.encode('utf-8')).decode('utf-8')
 
-# ==========================================
-# 🧠 مبدل بومی کلش به V2ray
-# ==========================================
-
 def clash_to_uri(proxy):
     try:
-        p_type = proxy.get('type')
+        p_type = proxy.get('type', '').lower()
         name = str(proxy.get('name', 'Proxy'))
         server = str(proxy.get('server', ''))
         port = str(proxy.get('port', ''))
         
         if not server or not port: return None
 
-        # --- پردازش VMESS ---
+        # --- ۱. پردازش VMESS ---
         if p_type == 'vmess':
             v_json = {
                 "v": "2", "ps": name, "add": server, "port": port,
-                "id": str(proxy.get('uuid', '')),
-                "aid": str(proxy.get('alterId', 0)),
-                "scy": proxy.get('cipher', 'auto'),
-                "net": proxy.get('network', 'tcp'),
-                "type": "none", "host": "", "path": "", "tls": "",
-                "sni": proxy.get('servername', '')
+                "id": str(proxy.get('uuid', '')), "aid": str(proxy.get('alterId', 0)),
+                "scy": proxy.get('cipher', 'auto'), "net": proxy.get('network', 'tcp'),
+                "type": "none", "host": "", "path": "", "tls": "", "sni": proxy.get('servername', '')
             }
             if proxy.get('tls'): v_json['tls'] = "tls"
             if v_json['net'] == 'ws':
@@ -84,16 +111,14 @@ def clash_to_uri(proxy):
                 v_json['host'] = proxy.get('ws-opts', {}).get('headers', {}).get('Host', '')
             if v_json['net'] == 'grpc':
                 v_json['path'] = proxy.get('grpc-opts', {}).get('grpc-service-name', '')
-
             return "vmess://" + encode_base64(json.dumps(v_json, separators=(',', ':')))
 
-        # --- پردازش VLESS ---
+        # --- ۲. پردازش VLESS ---
         elif p_type == 'vless':
             uuid = str(proxy.get('uuid', ''))
             params = {"type": proxy.get('network', 'tcp')}
             if proxy.get('servername'): params['sni'] = proxy.get('servername')
             if proxy.get('flow'): params['flow'] = proxy.get('flow')
-            
             if proxy.get('reality-opts'):
                 params['security'] = 'reality'
                 ro = proxy.get('reality-opts', {})
@@ -103,131 +128,124 @@ def clash_to_uri(proxy):
             elif proxy.get('tls'):
                 params['security'] = 'tls'
                 params['fp'] = proxy.get('client-fingerprint', 'chrome')
-
             if params['type'] == 'ws':
                 params['path'] = proxy.get('ws-opts', {}).get('path', '/')
                 params['host'] = proxy.get('ws-opts', {}).get('headers', {}).get('Host', '')
             if params['type'] == 'grpc':
                 params['serviceName'] = proxy.get('grpc-opts', {}).get('grpc-service-name', '')
-
             query = urllib.parse.urlencode({k: v for k, v in params.items() if v})
             return f"vless://{uuid}@{server}:{port}?{query}#{urllib.parse.quote(name)}"
 
-        # --- پردازش TROJAN ---
+        # --- ۳. پردازش TROJAN ---
         elif p_type == 'trojan':
             password = str(proxy.get('password', ''))
             params = {"type": proxy.get('network', 'tcp')}
-            if proxy.get('sni') or proxy.get('servername'):
-                params['sni'] = proxy.get('sni', proxy.get('servername'))
-            if proxy.get('skip-cert-verify') is not None or proxy.get('tls', True):
-                params['security'] = 'tls'
-
+            if proxy.get('sni') or proxy.get('servername'): params['sni'] = proxy.get('sni', proxy.get('servername'))
+            if proxy.get('skip-cert-verify') is not None or proxy.get('tls', True): params['security'] = 'tls'
             if params['type'] == 'ws':
                 params['path'] = proxy.get('ws-opts', {}).get('path', '/')
                 params['host'] = proxy.get('ws-opts', {}).get('headers', {}).get('Host', '')
             if params['type'] == 'grpc':
                 params['serviceName'] = proxy.get('grpc-opts', {}).get('grpc-service-name', '')
-
             query = urllib.parse.urlencode({k: v for k, v in params.items() if v})
             return f"trojan://{password}@{server}:{port}?{query}#{urllib.parse.quote(name)}"
 
-        # --- پردازش SHADOWSOCKS (SS) ---
-        elif p_type == 'ss' or p_type == 'shadowsocks':
+        # --- ۴. پردازش SHADOWSOCKS ---
+        elif p_type in ['ss', 'shadowsocks']:
             cipher = proxy.get('cipher', 'auto')
             password = str(proxy.get('password', ''))
-            
-            user_info = f"{cipher}:{password}"
-            user_info_b64 = encode_base64(user_info)
-            
+            user_info_b64 = encode_base64(f"{cipher}:{password}")
             plugin_str = ""
-            plugin = proxy.get('plugin')
-            if plugin:
+            if proxy.get('plugin'):
                 plugin_opts = proxy.get('plugin-opts', {})
-                opts_list = [f"{k}={v}" for k, v in plugin_opts.items()]
-                opts_str = ";".join(opts_list)
-                plugin_str = f"/?plugin={urllib.parse.quote(f'{plugin};{opts_str}')}"
-
+                opts_str = ";".join([f"{k}={v}" for k, v in plugin_opts.items()])
+                plugin_str = f"/?plugin={urllib.parse.quote(f'{proxy.get('plugin')};{opts_str}')}"
             return f"ss://{user_info_b64}@{server}:{port}{plugin_str}#{urllib.parse.quote(name)}"
 
-        # --- پردازش پروکسی‌های نوع HTTP / HTTPS ---
+        # --- ۵. پردازش HTTP / HTTPS ---
         elif p_type == 'http':
             username = proxy.get('username', '')
             password = proxy.get('password', '')
-            
-            user_pass_str = ""
-            if username or password:
-                user_pass_str = encode_base64(f"{username}:{password}") + "@"
-                
+            user_pass_str = encode_base64(f"{username}:{password}") + "@" if username or password else ""
             scheme = "https" if proxy.get('tls') else "http"
-            
-            query_params = {}
-            if proxy.get('skip-cert-verify'):
-                query_params['skipCertVerify'] = 'true'
-                
-            query_str = ""
-            if query_params:
-                query_str = "?" + urllib.parse.urlencode(query_params)
-                
+            query_str = "?skipCertVerify=true" if proxy.get('skip-cert-verify') else ""
             return f"{scheme}://{user_pass_str}{server}:{port}{query_str}#{urllib.parse.quote(name)}"
 
-    except Exception as e:
-        return None
-    return None
+        # --- ۶. پردازش HYSTERIA (نسخه ۱) ---
+        elif p_type == 'hysteria':
+            auth = proxy.get('auth-str', proxy.get('auth_str', ''))
+            params = {
+                "peer": proxy.get('sni', proxy.get('servername', '')),
+                "insecure": "1" if proxy.get('skip-cert-verify') else "0",
+                "upmbps": str(proxy.get('up', '')).findall(r'\d+')[0] if proxy.get('up') else "",
+                "downmbps": str(proxy.get('down', '')).findall(r'\d+')[0] if proxy.get('down') else "",
+                "alpn": proxy.get('alpn', ['hysteria'])[0]
+            }
+            if auth: params['auth'] = auth
+            query = urllib.parse.urlencode({k: v for k, v in params.items() if v})
+            return f"hysteria://{server}:{port}?{query}#{urllib.parse.quote(name)}"
 
-# ==========================================
-# 🔍 پردازش نهایی و تغییر نام
-# ==========================================
+        # --- ۷. پردازش HYSTERIA 2 (Hy2) ---
+        elif p_type in ['hysteria2', 'hy2']:
+            password = proxy.get('password', '')
+            params = {
+                "sni": proxy.get('sni', proxy.get('servername', '')),
+                "insecure": "1" if proxy.get('skip-cert-verify') else "0",
+            }
+            query = urllib.parse.urlencode({k: v for k, v in params.items() if v})
+            return f"hysteria2://{password}@{server}:{port}?{query}#{urllib.parse.quote(name)}"
+
+    except Exception: return None
+    return None
 
 def get_server_and_port(uri):
     if uri.startswith("vmess://"):
         try:
             data = json.loads(decode_base64(uri[8:]))
             return str(data.get('add')), str(data.get('port'))
-        except:
-            return None, None
-            
+        except: return None, None
     elif uri.startswith("ss://"):
         try:
             base_part = uri[5:].split('#')[0]
             if '@' not in base_part and '/' not in base_part:
                 decoded = decode_base64(urllib.parse.unquote(base_part))
-                if '@' in decoded:
-                    server_port = decoded.split('@')[-1]
-                    server, port = server_port.split(':')
-                    return server, port
+                if '@' in decoded: return decoded.split('@')[-1].split(':')
             parsed = urllib.parse.urlparse(uri if uri.startswith('ss://') else f"ss://{uri}")
             return parsed.hostname, str(parsed.port)
-        except:
-            return None, None
-            
+        except: return None, None
     else:
         try:
-            base_uri = uri.split('#')[0] if '#' in uri else uri
-            parsed = urllib.parse.urlparse(base_uri)
+            parsed = urllib.parse.urlparse(uri.split('#')[0] if '#' in uri else uri)
             return parsed.hostname, str(parsed.port)
-        except:
-            return None, None
+        except: return None, None
 
-def apply_new_remark(uri, index, flag):
-    new_name = REMARK_TEMPLATE.format(index=index, flag=flag)
-    
+def apply_new_remark(uri, new_name):
     if uri.startswith("vmess://"):
         try:
             data = json.loads(decode_base64(uri[8:]))
             data['ps'] = new_name
             return "vmess://" + encode_base64(json.dumps(data, separators=(',', ':')))
-        except:
-            return uri
+        except: return uri
     else:
-        try:
-            base_uri = uri.split('#')[0]
-            return f"{base_uri}#{urllib.parse.quote(new_name)}"
-        except:
-            return uri
+        try: return f"{uri.split('#')[0]}#{urllib.parse.quote(new_name)}"
+        except: return uri
 
 # ==========================================
-# 🚀 اجرای برنامه
+# 🚀 اجرای برنامه متمرکز بر سرعت و تنوع پروتکل
 # ==========================================
+
+def process_geo_parallel(unique_configs):
+    servers = list(set([server for server, uri in unique_configs.values()]))
+    total = len(servers)
+    print(f"\n⚡️ [۳/۴] استخراج آفلاین دیتاسنتر و لوکیشن ({MAX_THREADS} پردازش همزمان)...")
+    completed = 0
+    with ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:
+        for server in executor.map(lambda s: (s, get_geo_info(s)), servers):
+            completed += 1
+            percent = int((completed / total) * 100)
+            sys.stdout.write(f"\r 🔄 پیشرفت: |{'█' * (percent // 3)}{'░' * (33 - (percent // 3))}| {percent}%")
+            sys.stdout.flush()
+    print("\n✅ پردازش آفلاین با موفقیت تکمیل شد.")
 
 def process_subscriptions():
     if not os.path.exists(SRC_FILE):
@@ -237,96 +255,69 @@ def process_subscriptions():
     with open(SRC_FILE, 'r', encoding='utf-8') as f:
         sub_links = [line.strip() for line in f if line.strip() and not line.startswith('#')]
 
-    if not sub_links: 
-        print("⚠️ هیچ لینکی در فایل منابع یافت نشد.")
-        return
+    if not sub_links: return
 
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     all_raw_uris = []
     
-    print("\n📥 [۱/۳] در حال بررسی و دریافت لینک‌های ساب...")
-    total_links = len(sub_links)
-    
+    print("\n📥 [۱/۴] دریافت لینک‌های ساب و استخراج محتوا...")
     for idx, link in enumerate(sub_links, 1):
-        # نمایش وضعیت بررسی زنده برای تک‌تک لینک‌ها
-        short_link = link if len(link) <= 60 else link[:57] + "..."
-        print(f" ⏳ [{idx}/{total_links}] در حال بررسی: {short_link} -> ", end="", flush=True)
-        
+        print(f" ⏳ [{idx}/{len(sub_links)}] بررسی: {link[:50]}... -> ", end="", flush=True)
         try:
             response = requests.get(link, timeout=15)
             if response.status_code != 200:
-                print(f"❌ خطا (کد وضعیت: {response.status_code})")
+                print(f"❌ خطا ({response.status_code})")
                 continue
-                
             text = response.text.strip()
             count_before = len(all_raw_uris)
             
             if "proxies:" in text or text.startswith("port:"):
                 yaml_data = yaml.safe_load(text)
                 for proxy in yaml_data.get('proxies', []):
-                    converted_uri = clash_to_uri(proxy)
-                    if converted_uri:
-                        all_raw_uris.append(converted_uri)
+                    converted = clash_to_uri(proxy)
+                    if converted: all_raw_uris.append(converted)
             else:
                 decoded = decode_base64(text)
-                if decoded and any(proto in decoded for proto in ["vmess://", "vless://", "trojan://", "ss://", "http://", "https://"]):
+                if decoded and any(p in decoded for p in VALID_PROTOCOLS):
                     all_raw_uris.extend(decoded.splitlines())
                 else:
                     all_raw_uris.extend(text.splitlines())
-            
-            extracted = len(all_raw_uris) - count_before
-            print(f"✅ موفق ({extracted} کانفیگ استخراج شد)")
-            
-        except Exception as e:
-            print(f"❌ خطا در اتصال ({str(e)[:30]})")
+            print(f"✅ ({len(all_raw_uris) - count_before} کانفیگ)")
+        except Exception: print("❌ خطا")
 
-    if not all_raw_uris:
-        print("\n❌ هیچ کانفیگی یافت نشد عملیات متوقف شد.")
-        return
-
-    print(f"\n🔄 [۲/۳] در حال فیلتر و حذف تکراری‌ها (Deep Dedup)...")
+    print("\n🔄 [۲/۴] اجرای Deep Dedup (حذف تکراری‌های عمیق)...")
     unique_configs = {}
     for uri in all_raw_uris:
         uri = uri.strip()
-        if not uri or not uri.startswith(("vmess://", "vless://", "trojan://", "ss://", "http://", "https://")): 
-            continue
-            
+        if not uri or not uri.startswith(VALID_PROTOCOLS): continue
         server, port = get_server_and_port(uri)
         if server and port:
             dedup_key = f"{server}:{port}"
             if dedup_key not in unique_configs:
                 unique_configs[dedup_key] = (server, uri)
+    print(f" ✅ کانفیگ‌های یکتا: {len(unique_configs)}")
 
-    total_unique = len(unique_configs)
-    print(f" ✅ تعداد کانفیگ‌های بدون تکرار و خالص: {total_unique}")
-    
-    print("\n🌐 [۳/۳] در حال تشخیص پرچم کشورها (Geolocation)...")
-    final_uris = []
-    index = 1
-    
+    process_geo_parallel(unique_configs)
+
+    print("\n🏷 [۴/۴] فرمت‌بندی و اختصاص شماره یکتا به کشورها...")
+    grouped_by_cc = {}
     for dedup_key, (server, uri) in unique_configs.items():
-        # ساخت نوار پیشرفت پویا (Progress Bar)
-        percent = int((index / total_unique) * 100)
-        bar_length = 30
-        filled_length = int(bar_length * index // total_unique)
-        bar = '█' * filled_length + '░' * (bar_length - filled_length)
-        
-        # چاپ وضعیت به روز رسانی خط به صورت ریل‌تایم با \r
-        sys.stdout.write(f"\r 🔄 پیشرفت عملیات: |{bar}| {percent}% ({index}/{total_unique}) [سرور فعلی: {server[:15]}]")
-        sys.stdout.flush()
-        
-        flag = get_country_flag(server)
-        new_uri = apply_new_remark(uri, index, flag)
-        final_uris.append(new_uri)
-        index += 1
+        flag, cc, datacenter = get_geo_info(server)
+        if cc not in grouped_by_cc: grouped_by_cc[cc] = []
+        grouped_by_cc[cc].append((uri, flag, cc, datacenter))
 
-    print("\n ✅ پردازش پرچم‌ها با موفقیت کامل شد.")
+    final_uris = []
+    for cc, items in grouped_by_cc.items():
+        for index, (uri, flag, code, datacenter) in enumerate(items, 1):
+            # خروجی فوق حرفه‌ای درخواستی شما همراه با برند کانال
+            new_name = f"{flag} {code} {datacenter} #{index} {BRAND_NAME}"
+            final_uris.append(apply_new_remark(uri, new_name))
 
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         f.write('\n'.join(final_uris))
         
-    print(f"\n🎉 با موفقیت به پایان رسید! تعداد کل کانفیگ‌های نهایی: {len(final_uris)}")
-    print(f"📁 فایل خروجی دیکود شده در مسیر: {OUTPUT_FILE} ذخیره شد.\n")
+    print(f"\n🎉 اتمام پردازش! خروجی نهایی: {len(final_uris)} کانفیگ باکیفیت و همه‌جانبه.")
+    print(f"📁 ذخیره در: {OUTPUT_FILE}\n")
 
 if __name__ == "__main__":
     process_subscriptions()
