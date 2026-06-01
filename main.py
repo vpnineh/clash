@@ -24,7 +24,7 @@ def get_country_flag(ip_or_domain):
         return LOCATION_CACHE[ip_or_domain]
     
     try:
-        time.sleep(1.2) # جلوگیری از لیمیت شدن API
+        time.sleep(1.2) # جلوگیری از لیمیت شدن API (ip-api.com)
         response = requests.get(f"http://ip-api.com/json/{ip_or_domain}?fields=countryCode", timeout=5)
         if response.status_code == 200:
             data = response.json()
@@ -136,7 +136,6 @@ def clash_to_uri(proxy):
             cipher = proxy.get('cipher', 'auto')
             password = str(proxy.get('password', ''))
             
-            # انکود کردن پسورد و متد (استاندارد SIP002)
             user_info = f"{cipher}:{password}"
             user_info_b64 = encode_base64(user_info)
             
@@ -150,6 +149,27 @@ def clash_to_uri(proxy):
 
             return f"ss://{user_info_b64}@{server}:{port}{plugin_str}#{urllib.parse.quote(name)}"
 
+        # --- پردازش پروکسی‌های نوع HTTP / HTTPS ---
+        elif p_type == 'http':
+            username = proxy.get('username', '')
+            password = proxy.get('password', '')
+            
+            user_pass_str = ""
+            if username or password:
+                user_pass_str = encode_base64(f"{username}:{password}") + "@"
+                
+            scheme = "https" if proxy.get('tls') else "http"
+            
+            query_params = {}
+            if proxy.get('skip-cert-verify'):
+                query_params['skipCertVerify'] = 'true'
+                
+            query_str = ""
+            if query_params:
+                query_str = "?" + urllib.parse.urlencode(query_params)
+                
+            return f"{scheme}://{user_pass_str}{server}:{port}{query_str}#{urllib.parse.quote(name)}"
+
     except Exception as e:
         return None
     return None
@@ -159,7 +179,7 @@ def clash_to_uri(proxy):
 # ==========================================
 
 def get_server_and_port(uri):
-    """استخراج سرور و پورت با پشتیبانی از SS قدیمی و جدید"""
+    """استخراج سرور و پورت با پشتیبانی از SS قدیمی، جدید و HTTP"""
     if uri.startswith("vmess://"):
         try:
             data = json.loads(decode_base64(uri[8:]))
@@ -170,21 +190,19 @@ def get_server_and_port(uri):
     elif uri.startswith("ss://"):
         try:
             base_part = uri[5:].split('#')[0]
-            # بررسی استاندارد قدیمی (بدون @ در بخش آدرس)
             if '@' not in base_part and '/' not in base_part:
                 decoded = decode_base64(urllib.parse.unquote(base_part))
                 if '@' in decoded:
                     server_port = decoded.split('@')[-1]
                     server, port = server_port.split(':')
                     return server, port
-            # استاندارد جدید (SIP002)
             parsed = urllib.parse.urlparse(uri if uri.startswith('ss://') else f"ss://{uri}")
             return parsed.hostname, str(parsed.port)
         except:
             return None, None
             
     else:
-        # vless و trojan
+        # vless, trojan, http و https
         try:
             base_uri = uri.split('#')[0] if '#' in uri else uri
             parsed = urllib.parse.urlparse(base_uri)
@@ -203,7 +221,7 @@ def apply_new_remark(uri, index, flag):
         except:
             return uri
     else:
-        # برای vless, trojan و ss
+        # برای vless, trojan, ss, http و https
         try:
             base_uri = uri.split('#')[0]
             return f"{base_uri}#{urllib.parse.quote(new_name)}"
@@ -242,8 +260,8 @@ def process_subscriptions():
                         all_raw_uris.append(converted_uri)
             else:
                 decoded = decode_base64(text)
-                # اضافه شدن ss:// به لیست جستجو
-                if decoded and any(proto in decoded for proto in ["vmess://", "vless://", "trojan://", "ss://"]):
+                # اضافه شدن پروتکل‌های http و https به لیست جستجو در محتوای دیکود شده
+                if decoded and any(proto in decoded for proto in ["vmess://", "vless://", "trojan://", "ss://", "http://", "https://"]):
                     all_raw_uris.extend(decoded.splitlines())
                 else:
                     all_raw_uris.extend(text.splitlines())
@@ -257,8 +275,8 @@ def process_subscriptions():
     unique_configs = {}
     for uri in all_raw_uris:
         uri = uri.strip()
-        # فیلتر برای پروتکل‌های مجاز
-        if not uri or not uri.startswith(("vmess://", "vless://", "trojan://", "ss://")): 
+        # فیلتر برای پروتکل‌های مجاز (شامل http:// و https://)
+        if not uri or not uri.startswith(("vmess://", "vless://", "trojan://", "ss://", "http://", "https://")): 
             continue
             
         server, port = get_server_and_port(uri)
