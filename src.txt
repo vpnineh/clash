@@ -11,3 +11,11 @@ https://github.com/suiyuan8/clash/raw/refs/heads/main/%F0%9F%87%BA%F0%9F%87%B8US
 https://github.com/suiyuan8/clash/raw/refs/heads/main/%F0%9F%87%BA%F0%9F%87%B8US_156.146.59(48https)
 https://shz.al/~WangCai
 https://raw.githubusercontent.com/wlunlocker/anti-rkn/9d752f2006c8e50b6d06065e22d3bb12fe61e245/vpnstable.txt
+https://github.com/igareck/vpn-configs-for-russia/raw/refs/heads/main/BLACK_SS+All_RUS.txt
+https://github.com/igareck/vpn-configs-for-russia/raw/refs/heads/main/BLACK_VLESS_RUS.txt
+https://github.com/igareck/vpn-configs-for-russia/raw/refs/heads/main/BLACK_VLESS_RUS_mobile.txt
+https://github.com/igareck/vpn-configs-for-russia/raw/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt
+https://github.com/igareck/vpn-configs-for-russia/raw/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt
+https://github.com/igareck/vpn-configs-for-russia/raw/refs/heads/main/WHITE-CIDR-RU-all.txt
+https://github.com/igareck/vpn-configs-for-russia/raw/refs/heads/main/WHITE-CIDR-RU-checked.txt
+https://github.com/igareck/vpn-configs-for-russia/raw/refs/heads/main/WHITE-SNI-RU-all.txt
