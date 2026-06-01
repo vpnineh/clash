@@ -2,8 +2,12 @@ name: Auto Update VPNine1 Subscriptions
 
 on:
   schedule:
-    - cron: '3 */2 * * *' # هر ۶ ساعت یک‌بار به صورت خودکار اجرا می‌شود
+    - cron: '3 */2 * * *' 
   workflow_dispatch: # امکان اجرای دستی از تب Actions را فراهم می‌کند
+
+# دسترسی لازم برای کامیت و پش کردن تغییرات توسط بات گیت‌هاب
+permissions:
+  contents: write
 
 jobs:
   build-and-update:
