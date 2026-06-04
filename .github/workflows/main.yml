@@ -2,7 +2,7 @@ name: Auto Update VPNine1 Subscriptions
 
 on:
   schedule:
-    - cron: '3 */2 * * *' 
+    - cron: '3 * * * *' 
   workflow_dispatch:
 
 permissions:
