@@ -2,6 +2,7 @@
 https://shz.al/~WangCai
 https://github.com/suiyuan8/clash/raw/refs/heads/main/config2
 https://github.com/suiyuan8/clash/raw/refs/heads/main/config
+https://raw.githubusercontent.com/masir-sefid/Sub/main/@Masir_Sefid.txt
 https://shz.al/~yaml
 #https://raw.githubusercontent.com/wlunlocker/anti-rkn/9d752f2006c8e50b6d06065e22d3bb12fe61e245/vpnstable.txt
 #https://github.com/igareck/vpn-configs-for-russia/raw/refs/heads/main/BLACK_SS+All_RUS.txt
