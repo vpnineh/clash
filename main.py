@@ -271,11 +271,42 @@ def process_subscriptions():
             text = response.text.strip()
             count_before = len(all_raw_uris)
             
-            if "proxies:" in text or text.startswith("port:"):
-                yaml_data = yaml.safe_load(text)
+            if "proxies:" in text or "proxy-providers:" in text or text.startswith("port:"):
+                try:
+                    yaml_data = yaml.safe_load(text)
+                except Exception as e:
+                    print(" ❌ خطا در پارس YAML")
+                    continue
+
+                # ۱. استخراج از بخش proxies داخلی
                 for proxy in yaml_data.get('proxies', []):
                     converted = clash_to_uri(proxy)
                     if converted: all_raw_uris.append(converted)
+                
+                # ۲. استخراج از لینک‌های proxy-providers (رفع مشکل اصلی)
+                providers = yaml_data.get('proxy-providers', {})
+                if isinstance(providers, dict):
+                    for p_name, p_data in providers.items():
+                        if isinstance(p_data, dict) and p_data.get('type') == 'http' and 'url' in p_data:
+                            try:
+                                provider_url = p_data['url']
+                                p_resp = requests.get(provider_url, timeout=15)
+                                if p_resp.status_code == 200:
+                                    try:
+                                        p_yaml = yaml.safe_load(p_resp.text)
+                                        if p_yaml and 'proxies' in p_yaml:
+                                            for proxy in p_yaml['proxies']:
+                                                converted = clash_to_uri(proxy)
+                                                if converted: all_raw_uris.append(converted)
+                                    except:
+                                        # اگر YAML نبود، بررسی برای حالت Base64
+                                        decoded = decode_base64(p_resp.text)
+                                        if decoded and any(pr in decoded for pr in VALID_PROTOCOLS):
+                                            all_raw_uris.extend(decoded.splitlines())
+                                        else:
+                                            all_raw_uris.extend(p_resp.text.splitlines())
+                            except Exception:
+                                pass # چشم‌پوشی از خطای تایم‌اوت در پرووایدر خاص
             else:
                 decoded = decode_base64(text)
                 if decoded and any(p in decoded for p in VALID_PROTOCOLS):
