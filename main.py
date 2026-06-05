@@ -274,16 +274,16 @@ def process_subscriptions():
             if "proxies:" in text or "proxy-providers:" in text or text.startswith("port:"):
                 try:
                     yaml_data = yaml.safe_load(text)
-                except Exception as e:
+                except Exception:
                     print(" ❌ خطا در پارس YAML")
                     continue
 
-                # ۱. استخراج از بخش proxies داخلی
-                for proxy in yaml_data.get('proxies', []):
+                # ۱. استخراج از بخش proxies داخلی فایل
+                for proxy in (yaml_data.get('proxies') or []):
                     converted = clash_to_uri(proxy)
                     if converted: all_raw_uris.append(converted)
                 
-                # ۲. استخراج از لینک‌های proxy-providers (رفع مشکل اصلی)
+                # ۲. استخراج از لینک‌های proxy-providers (اصلاح‌شده برای پشتیبانی کامل از Base64 و YAML)
                 providers = yaml_data.get('proxy-providers', {})
                 if isinstance(providers, dict):
                     for p_name, p_data in providers.items():
@@ -292,19 +292,22 @@ def process_subscriptions():
                                 provider_url = p_data['url']
                                 p_resp = requests.get(provider_url, timeout=15)
                                 if p_resp.status_code == 200:
-                                    try:
-                                        p_yaml = yaml.safe_load(p_resp.text)
-                                        if p_yaml and 'proxies' in p_yaml:
-                                            for proxy in p_yaml['proxies']:
+                                    p_text = p_resp.text.strip()
+                                    # بررسی می‌کنیم که آیا محتوای لینک ساب، YAML است یا Base64/URI
+                                    if "proxies:" in p_text or p_text.startswith("port:"):
+                                        try:
+                                            p_yaml = yaml.safe_load(p_text)
+                                            for proxy in (p_yaml.get('proxies') or []):
                                                 converted = clash_to_uri(proxy)
                                                 if converted: all_raw_uris.append(converted)
-                                    except:
-                                        # اگر YAML نبود، بررسی برای حالت Base64
-                                        decoded = decode_base64(p_resp.text)
+                                        except: pass
+                                    else:
+                                        # اگر YAML نبود (مثل لینک WangCai)، اینجا Base64 دیکد می‌شود
+                                        decoded = decode_base64(p_text)
                                         if decoded and any(pr in decoded for pr in VALID_PROTOCOLS):
                                             all_raw_uris.extend(decoded.splitlines())
                                         else:
-                                            all_raw_uris.extend(p_resp.text.splitlines())
+                                            all_raw_uris.extend(p_text.splitlines())
                             except Exception:
                                 pass # چشم‌پوشی از خطای تایم‌اوت در پرووایدر خاص
             else:
