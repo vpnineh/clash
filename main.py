@@ -22,7 +22,12 @@ CITY_DB_PATH = "GeoLite2-City.mmdb"
 ASN_DB_PATH = "GeoLite2-ASN.mmdb"
 
 GEO_CACHE = {}
-VALID_PROTOCOLS = ("vmess://", "vless://", "trojan://", "ss://", "http://", "https://", "hysteria://", "hysteria2://", "hy2://")
+# پروتکل‌های SOCKS و سایر پروتکل‌های جدید اضافه شدند
+VALID_PROTOCOLS = (
+    "vmess://", "vless://", "trojan://", "ss://", "http://", "https://", 
+    "hysteria://", "hysteria2://", "hy2://", "socks://", "socks5://", 
+    "tuic://", "wireguard://", "wg://"
+)
 
 # ==========================================
 # 🛠 توابع پردازش Geo و شبکه
@@ -195,6 +200,13 @@ def clash_to_uri(proxy):
             query = urllib.parse.urlencode({k: v for k, v in params.items() if v})
             return f"hysteria2://{password}@{server}:{port}?{query}#{urllib.parse.quote(name)}"
 
+        # --- ۸. پردازش SOCKS و SOCKS5 ---
+        elif p_type in ['socks', 'socks5']:
+            username = proxy.get('username', '')
+            password = proxy.get('password', '')
+            user_pass_str = encode_base64(f"{username}:{password}") + "@" if username or password else ""
+            return f"socks://{user_pass_str}{server}:{port}#{urllib.parse.quote(name)}"
+
     except Exception: return None
     return None
 
@@ -283,7 +295,7 @@ def process_subscriptions():
                     converted = clash_to_uri(proxy)
                     if converted: all_raw_uris.append(converted)
                 
-                # ۲. استخراج از لینک‌های proxy-providers (اصلاح‌شده برای پشتیبانی کامل از Base64 و YAML)
+                # ۲. استخراج از لینک‌های proxy-providers
                 providers = yaml_data.get('proxy-providers', {})
                 if isinstance(providers, dict):
                     for p_name, p_data in providers.items():
@@ -293,7 +305,6 @@ def process_subscriptions():
                                 p_resp = requests.get(provider_url, timeout=15)
                                 if p_resp.status_code == 200:
                                     p_text = p_resp.text.strip()
-                                    # بررسی می‌کنیم که آیا محتوای لینک ساب، YAML است یا Base64/URI
                                     if "proxies:" in p_text or p_text.startswith("port:"):
                                         try:
                                             p_yaml = yaml.safe_load(p_text)
@@ -302,7 +313,6 @@ def process_subscriptions():
                                                 if converted: all_raw_uris.append(converted)
                                         except: pass
                                     else:
-                                        # اگر YAML نبود (مثل لینک WangCai)، اینجا Base64 دیکد می‌شود
                                         decoded = decode_base64(p_text)
                                         if decoded and any(pr in decoded for pr in VALID_PROTOCOLS):
                                             all_raw_uris.extend(decoded.splitlines())
@@ -343,7 +353,6 @@ def process_subscriptions():
     final_uris = []
     for cc, items in grouped_by_cc.items():
         for index, (uri, flag, code, datacenter) in enumerate(items, 1):
-            # خروجی فوق حرفه‌ای درخواستی شما همراه با برند کانال
             new_name = f"{flag} {code} {datacenter} #{index} {BRAND_NAME}"
             final_uris.append(apply_new_remark(uri, new_name))
 
