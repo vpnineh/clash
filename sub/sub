@@ -9,7 +9,7 @@ socks5://134.122.1.61:11679#%F0%9F%87%BA%F0%9F%87%B8%20US%20DigitalOcean%20%238%
 socks5://212.58.132.5:1080#%F0%9F%87%BA%F0%9F%87%B8%20US%20NSFOCUS%20%239%20%40VPNine1
 socks5://test123:test123@38.110.1.149:1080#%F0%9F%87%BA%F0%9F%87%B8%20US%20GTHost%20%2310%20%40VPNine1
 socks5://162.240.96.211:8443#%F0%9F%87%BA%F0%9F%87%B8%20US%20Unified%20Layer%20%2311%20%40VPNine1
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpvWklvQTY5UTh5aGNRVjhrYTNQYTNB@82.38.31.2:8080#%F0%9F%87%AC%F0%9F%87%A7%20GB%20Greenhost%20BV%20%231%20%40VPNine1
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpvWklvQTY5UTh5aGNRVjhrYTNQYTNB@82.38.31.7:8080#%F0%9F%87%AC%F0%9F%87%A7%20GB%20Greenhost%20BV%20%231%20%40VPNine1
 ss://YWVzLTI1Ni1jZmI6cXdlclJFV1FAQA@221.150.109.89:59490#%F0%9F%87%B0%F0%9F%87%B7%20KR%20Korea%20Telecom%20%231%20%40VPNine1
 ss://YWVzLTI1Ni1jZmI6cXdlclJFV1FAQA@221.150.109.90:57255#%F0%9F%87%B0%F0%9F%87%B7%20KR%20Korea%20Telecom%20%232%20%40VPNine1
 ss://YWVzLTI1Ni1jZmI6cXdlclJFV1FAQA@125.141.26.12:13897#%F0%9F%87%B0%F0%9F%87%B7%20KR%20Korea%20Telecom%20%233%20%40VPNine1
@@ -60,15 +60,3 @@ socks5://socks5:socks5@8.210.36.147:5555#%F0%9F%87%AD%F0%9F%87%B0%20HK%20Alibaba
 socks5://170.64.170.204:1080#%F0%9F%87%A6%F0%9F%87%BA%20AU%20DigitalOcean%20%231%20%40VPNine1
 socks5://46.62.214.3:1080#%F0%9F%87%AB%F0%9F%87%AE%20FI%20Hetzner%20Online%20%231%20%40VPNine1
 trojan://Masir_Sefid@Masir_Sefid:443?security=reality&pbk=w0XepGv1Hk0gBh1Apiw-nvn8SfzjWcDuxdxN1mpaF3g&headerType=none&fp=chrome&spx=%2FzyKRb3NaP9Ee0j4&type=tcp&sni=store.steampowered.com&sid=6ced01fc4aa417#%F0%9F%8F%B4%20UN%20Unknown%20%231%20%40VPNine1
-trojan://Masir_Sefid@188.213.130.212:443?security=reality&pbk=w0XepGv1Hk0gBh1Apiw-nvn8SfzjWcDuxdxN1mpaF3g&headerType=none&fp=chrome&spx=%2FzyKRb3NaP9Ee0j4&type=tcp&sni=store.steampowered.com&sid=6ced01fc4aa417#%F0%9F%87%A8%F0%9F%87%AD%20CH%20Infomaniak%20Netw%20%231%20%40VPNine1
-trojan://Masir_Sefid@188.213.130.212:1040?security=reality&pbk=w0XepGv1Hk0gBh1Apiw-nvn8SfzjWcDuxdxN1mpaF3g&headerType=none&fp=chrome&spx=%2FaRBYGa427aKKE16&type=tcp&sni=store.steampowered.com&sid=84e87fdcdf2ea9e8#%F0%9F%87%A8%F0%9F%87%AD%20CH%20Infomaniak%20Netw%20%232%20%40VPNine1
-trojan://Masir_Sefid@188.213.130.212:2053?security=reality&pbk=w0XepGv1Hk0gBh1Apiw-nvn8SfzjWcDuxdxN1mpaF3g&headerType=none&fp=chrome&spx=%2FW8svbYrFok2DfFx&type=tcp&sni=store.steampowered.com&sid=20b301df70#%F0%9F%87%A8%F0%9F%87%AD%20CH%20Infomaniak%20Netw%20%233%20%40VPNine1
-trojan://Masir_Sefid@188.213.130.212:2083?security=reality&pbk=w0XepGv1Hk0gBh1Apiw-nvn8SfzjWcDuxdxN1mpaF3g&headerType=none&fp=chrome&spx=%2FChZzHJgLH1mdM6A&type=tcp&sni=store.steampowered.com&sid=84e87fdcdf2ea9e8#%F0%9F%87%A8%F0%9F%87%AD%20CH%20Infomaniak%20Netw%20%234%20%40VPNine1
-trojan://Masir_Sefid@84.234.29.90:443?security=reality&pbk=w0XepGv1Hk0gBh1Apiw-nvn8SfzjWcDuxdxN1mpaF3g&headerType=none&fp=chrome&spx=%2FzyKRb3NaP9Ee0j4&type=tcp&sni=store.steampowered.com&sid=6ced01fc4aa417#%F0%9F%87%A8%F0%9F%87%AD%20CH%20Infomaniak%20Netw%20%235%20%40VPNine1
-trojan://Masir_Sefid@84.234.29.90:1040?security=reality&pbk=w0XepGv1Hk0gBh1Apiw-nvn8SfzjWcDuxdxN1mpaF3g&headerType=none&fp=chrome&spx=%2FaRBYGa427aKKE16&type=tcp&sni=store.steampowered.com&sid=84e87fdcdf2ea9e8#%F0%9F%87%A8%F0%9F%87%AD%20CH%20Infomaniak%20Netw%20%236%20%40VPNine1
-trojan://Masir_Sefid@84.234.29.90:2053?security=reality&pbk=w0XepGv1Hk0gBh1Apiw-nvn8SfzjWcDuxdxN1mpaF3g&headerType=none&fp=chrome&spx=%2FW8svbYrFok2DfFx&type=tcp&sni=store.steampowered.com&sid=20b301df70#%F0%9F%87%A8%F0%9F%87%AD%20CH%20Infomaniak%20Netw%20%237%20%40VPNine1
-trojan://Masir_Sefid@84.234.29.90:2083?security=reality&pbk=w0XepGv1Hk0gBh1Apiw-nvn8SfzjWcDuxdxN1mpaF3g&headerType=none&fp=chrome&spx=%2FChZzHJgLH1mdM6A&type=tcp&sni=store.steampowered.com&sid=84e87fdcdf2ea9e8#%F0%9F%87%A8%F0%9F%87%AD%20CH%20Infomaniak%20Netw%20%238%20%40VPNine1
-trojan://Masir_Sefid@84.234.31.249:443?security=reality&pbk=w0XepGv1Hk0gBh1Apiw-nvn8SfzjWcDuxdxN1mpaF3g&headerType=none&fp=chrome&spx=%2FzyKRb3NaP9Ee0j4&type=tcp&sni=store.steampowered.com&sid=6ced01fc4aa417#%F0%9F%87%A8%F0%9F%87%AD%20CH%20Infomaniak%20Netw%20%239%20%40VPNine1
-trojan://Masir_Sefid@84.234.31.249:1040?security=reality&pbk=w0XepGv1Hk0gBh1Apiw-nvn8SfzjWcDuxdxN1mpaF3g&headerType=none&fp=chrome&spx=%2FaRBYGa427aKKE16&type=tcp&sni=store.steampowered.com&sid=84e87fdcdf2ea9e8#%F0%9F%87%A8%F0%9F%87%AD%20CH%20Infomaniak%20Netw%20%2310%20%40VPNine1
-trojan://Masir_Sefid@84.234.31.249:2053?security=reality&pbk=w0XepGv1Hk0gBh1Apiw-nvn8SfzjWcDuxdxN1mpaF3g&headerType=none&fp=chrome&spx=%2FW8svbYrFok2DfFx&type=tcp&sni=store.steampowered.com&sid=20b301df70#%F0%9F%87%A8%F0%9F%87%AD%20CH%20Infomaniak%20Netw%20%2311%20%40VPNine1
-trojan://Masir_Sefid@84.234.31.249:2083?security=reality&pbk=w0XepGv1Hk0gBh1Apiw-nvn8SfzjWcDuxdxN1mpaF3g&headerType=none&fp=chrome&spx=%2FChZzHJgLH1mdM6A&type=tcp&sni=store.steampowered.com&sid=84e87fdcdf2ea9e8#%F0%9F%87%A8%F0%9F%87%AD%20CH%20Infomaniak%20Netw%20%2312%20%40VPNine1
