@@ -78,6 +78,13 @@ hy2://H7mP2xY9kJ4nQ8wR5tF6vB3z@54.191.165.99:443/?insecure=1&sni=https%3A%2F%2Ft
 socks5://134.122.1.61:11679#%F0%9F%87%BA%F0%9F%87%B8%20US%20DigitalOcean%20%232%20%40VPNine1
 socks5://212.58.132.5:1080#%F0%9F%87%BA%F0%9F%87%B8%20US%20NSFOCUS%20%233%20%40VPNine1
 socks5://test123:test123@38.110.1.149:1080#%F0%9F%87%BA%F0%9F%87%B8%20US%20GTHost%20%234%20%40VPNine1
+hy2://H7mP2xY9kJ4nQ8wR5tF6vB3z@43.201.46.195:443/?insecure=1&sni=https%3A%2F%2Ft.me%2FWangCai2%F0%9F%87%A8%F0%9F%87%B3#%F0%9F%87%B0%F0%9F%87%B7%20KR%20Amazon.com%20%231%20%40VPNine1
+hy2://H7mP2xY9kJ4nQ8wR5tF6vB3z@54.180.136.44:443/?insecure=1&sni=https%3A%2F%2Ft.me%2FWangCai2%F0%9F%87%A8%F0%9F%87%B3#%F0%9F%87%B0%F0%9F%87%B7%20KR%20Amazon.com%20%232%20%40VPNine1
+hy2://H7mP2xY9kJ4nQ8wR5tF6vB3z@3.38.152.178:443/?insecure=1&sni=https%3A%2F%2Ft.me%2FWangCai2%F0%9F%87%A8%F0%9F%87%B3#%F0%9F%87%B0%F0%9F%87%B7%20KR%20Amazon.com%20%233%20%40VPNine1
+hy2://H7mP2xY9kJ4nQ8wR5tF6vB3z@43.203.224.110:443/?insecure=1&sni=https%3A%2F%2Ft.me%2FWangCai2%F0%9F%87%A8%F0%9F%87%B3#%F0%9F%87%B0%F0%9F%87%B7%20KR%20Amazon.com%20%234%20%40VPNine1
+hy2://H7mP2xY9kJ4nQ8wR5tF6vB3z@3.34.141.61:443/?insecure=1&sni=https%3A%2F%2Ft.me%2FWangCai2%F0%9F%87%A8%F0%9F%87%B3#%F0%9F%87%B0%F0%9F%87%B7%20KR%20Amazon.com%20%235%20%40VPNine1
+hy2://H7mP2xY9kJ4nQ8wR5tF6vB3z@3.35.138.176:443/?insecure=1&sni=https%3A%2F%2Ft.me%2FWangCai2%F0%9F%87%A8%F0%9F%87%B3#%F0%9F%87%B0%F0%9F%87%B7%20KR%20Amazon.com%20%236%20%40VPNine1
+socks5://admin:admin@158.180.91.51:5555#%F0%9F%87%B0%F0%9F%87%B7%20KR%20Oracle%20%237%20%40VPNine1
 ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp0MHNybWR4cm0zeHlqbnZxejlld2x4YjJteXE3cmp1dg@54.169.81.201:2377?plugin=obfs-local%3Bobfs%3Dtls%3Bobfs-host%3D%28Telegram%F0%9F%87%A8%F0%9F%87%B3%20%40WangCai2%299097152%3A93638#%F0%9F%87%B8%F0%9F%87%AC%20SG%20Amazon.com%20%231%20%40VPNine1
 ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp0MHNybWR4cm0zeHlqbnZxejlld2x4YjJteXE3cmp1dg@54.179.128.3:2377?plugin=obfs-local%3Bobfs%3Dtls%3Bobfs-host%3D%28Telegram%F0%9F%87%A8%F0%9F%87%B3%20%40WangCai2%291b159d1%3A102742#%F0%9F%87%B8%F0%9F%87%AC%20SG%20Amazon.com%20%232%20%40VPNine1
 ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp0MHNybWR4cm0zeHlqbnZxejlld2x4YjJteXE3cmp1dg@54.254.229.123:2377?plugin=obfs-local%3Bobfs%3Dtls%3Bobfs-host%3D%28Telegram%F0%9F%87%A8%F0%9F%87%B3%20%40WangCai2%29e7b7ab7%3A102816#%F0%9F%87%B8%F0%9F%87%AC%20SG%20Amazon.com%20%233%20%40VPNine1
@@ -94,7 +101,6 @@ socks5://admin:admin@143.198.85.89:1080#%F0%9F%87%B8%F0%9F%87%AC%20SG%20DigitalO
 socks5://888888:888888@8.222.180.85:1080#%F0%9F%87%B8%F0%9F%87%AC%20SG%20Alibaba%20%28US%29%20Te%20%2314%20%40VPNine1
 socks5://111:111@101.33.74.115:20000#%F0%9F%87%B8%F0%9F%87%AC%20SG%20Tencent%20Buildin%20%2315%20%40VPNine1
 socks5://proxy:proxy@140.238.246.3:1080#%F0%9F%87%AE%F0%9F%87%B3%20IN%20Oracle%20%231%20%40VPNine1
-socks5://admin:admin@158.180.91.51:5555#%F0%9F%87%B0%F0%9F%87%B7%20KR%20Oracle%20%231%20%40VPNine1
 socks5://test123:test123@185.145.99.41:1080#%F0%9F%87%AC%F0%9F%87%A7%20GB%20Hostwinds.%20%231%20%40VPNine1
 socks5://proxy:proxy@193.188.21.202:1080#%F0%9F%87%B8%F0%9F%87%AA%20SE%20Aeza%20Group%20%231%20%40VPNine1
 trojan://Masir_Sefid@Masir_Sefid:443?security=reality&pbk=w0XepGv1Hk0gBh1Apiw-nvn8SfzjWcDuxdxN1mpaF3g&headerType=none&fp=chrome&spx=%2FzyKRb3NaP9Ee0j4&type=tcp&sni=store.steampowered.com&sid=6ced01fc4aa417#%F0%9F%8F%B4%20UN%20Unknown%20%231%20%40VPNine1
