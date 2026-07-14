@@ -59,6 +59,7 @@ ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp0MHNybWR4cm0zeHlqbnZxejlld2x4YjJteXE3cmp1dg@
 socks5://134.122.1.61:11679#%F0%9F%87%BA%F0%9F%87%B8%20US%20DigitalOcean%20%232%20%40VPNine1
 socks5://212.58.132.5:1080#%F0%9F%87%BA%F0%9F%87%B8%20US%20NSFOCUS%20%233%20%40VPNine1
 socks5://test123:test123@38.110.1.149:1080#%F0%9F%87%BA%F0%9F%87%B8%20US%20GTHost%20%234%20%40VPNine1
+vless://3761d81d-68b2-480b-aad9-3ff847b93839@153.56.135.59:443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=OevcHjcNd6P5915hkVd476stUNgpabD_XO9eWtArrls&security=reality&sid=f5f36cfd792b1f65&sni=site.rumedia-cdn.com&type=tcp#%F0%9F%87%B1%F0%9F%87%B9%20LT%20Serverio%20techno%20%231%20%40VPNine1
 socks5://proxy:proxy@140.238.246.3:1080#%F0%9F%87%AE%F0%9F%87%B3%20IN%20Oracle%20%231%20%40VPNine1
 socks5://admin:admin@158.180.91.51:5555#%F0%9F%87%B0%F0%9F%87%B7%20KR%20Oracle%20%231%20%40VPNine1
 socks5://test123:test123@185.145.99.41:1080#%F0%9F%87%AC%F0%9F%87%A7%20GB%20Hostwinds.%20%231%20%40VPNine1
