@@ -69,8 +69,7 @@ vless://61b08368-97cf-4f24-9e17-8c4a20cc2eea@87.251.77.95:443?encryption=none&fp
 vless://408e08b4-4e08-4819-9eb6-0e660ec87530@5.254.14.165:443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=CMkW1axrhEXoiJ6anMz9XEjlfqlAtEZya7L0b5ZPMyw&security=reality&sid=abe4a59b9f2407e3&sni=cdn4-81.yahoo.com&type=tcp#%F0%9F%87%A9%F0%9F%87%AA%20DE%20Voxility%20LLP%20%233%20%40VPNine1
 vless://b94da146-a56e-49d7-af4c-a68c9065cbfd@87.120.126.63:8443?encryption=none&fp=chrome&pbk=gOummriWvIYMJpd5oifBLqxsf_jcWHVsxVI7wnM0rRo&security=reality&sid=1e943a831d22faf6&sni=vpnforppl.top&type=grpc#%F0%9F%87%A9%F0%9F%87%AA%20DE%20H2nexus%20Ltd%20%234%20%40VPNine1
 vless://518a99df-54f6-4f42-819d-b60abd880edf@176.96.138.122:443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=O_YZOJVON0LE1U01hAtNUOVRy7z6fkBUXbMtpCGoGEg&security=reality&sni=kind-vortex.cdn.cachefleet.com&type=tcp#%F0%9F%87%A9%F0%9F%87%AA%20DE%20dataforest%20%235%20%40VPNine1
-vless://17a7a06a-4237-4510-acc2-ac0fd0d27852@IN.Sav-savteAm.iR:2017?encryption=none&fp=chrome&pbk=He7xpVqmrgr_Dg-Mks45tZS_ZR5eky4zpsgd-wREBDg&security=reality&sid=b11fa99e5c567d7b&sni=yahoo.com&type=tcp#%F0%9F%87%A9%F0%9F%87%AA%20DE%20Hetzner%20Online%20%236%20%40VPNine1
-socks5://159.195.49.27:1080#%F0%9F%87%A9%F0%9F%87%AA%20DE%20netcup%20%237%20%40VPNine1
+socks5://159.195.49.27:1080#%F0%9F%87%A9%F0%9F%87%AA%20DE%20netcup%20%236%20%40VPNine1
 vless://5dc56757-458e-4df2-9e71-2a14ce47e8af@84.32.101.222:443?encryption=none&security=tls&sni=ddc-chr.astralweb.tech&type=tcp#%F0%9F%87%B3%F0%9F%87%B1%20NL%20UAB%20Cherry%20Serv%20%231%20%40VPNine1
 vless://5dc56757-458e-4df2-9e71-2a14ce47e8af@ddc-chr.astralweb.tech:443?encryption=none&security=tls&sni=ddc-chr.astralweb.tech&type=tcp#%F0%9F%87%B3%F0%9F%87%B1%20NL%20UAB%20Cherry%20Serv%20%232%20%40VPNine1
 socks5://109.71.244.97:1080#%F0%9F%87%B3%F0%9F%87%B1%20NL%20Timeweb%20%233%20%40VPNine1
@@ -85,6 +84,8 @@ vless://44244879-3bdc-4fc0-90e7-0ae4d76352dc@89.125.13.244:443?encryption=none&f
 vless://41784775-8846-4579-9d9d-9ad6ea802e2e@ee-1.techprovide.icu:49001?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=_LbLyj6OynSREglFpkhdrxVmh_bf9p60uTEWfQbtUWo&security=reality&sid=1a6b1f9d0e&sni=de-7.techprovide.icu&type=tcp#%F0%9F%87%AA%F0%9F%87%AA%20EE%20BlueVPS%20OU%20%232%20%40VPNine1
 vless://4593aa27-a2a1-412f-935f-3829495c0970@91.235.234.186:443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=g-WqfHKjac71MMtkmq5bIvTFavzXTCAnEI_17KoTNSQ&security=reality&sni=us7fs3.proxen.pdevinfra.com&type=tcp#%F0%9F%87%AA%F0%9F%87%AA%20EE%20BlueVPS%20OU%20%233%20%40VPNine1
 socks5://5.45.118.209:1080#%F0%9F%87%AA%F0%9F%87%AA%20EE%20P.a.g.m.%20Ou%20%234%20%40VPNine1
+vless://17a7a06a-4237-4510-acc2-ac0fd0d27852@IN.Sav-savteAm.iR:2017?encryption=none&fp=chrome&pbk=He7xpVqmrgr_Dg-Mks45tZS_ZR5eky4zpsgd-wREBDg&security=reality&sid=b11fa99e5c567d7b&sni=yahoo.com&type=tcp#%F0%9F%8F%B4%20UN%20Unknown%20%231%20%40VPNine1
+trojan://Masir_Sefid@Masir_Sefid:443?security=reality&pbk=w0XepGv1Hk0gBh1Apiw-nvn8SfzjWcDuxdxN1mpaF3g&headerType=none&fp=chrome&spx=%2FzyKRb3NaP9Ee0j4&type=tcp&sni=store.steampowered.com&sid=6ced01fc4aa417#%F0%9F%8F%B4%20UN%20Unknown%20%232%20%40VPNine1
 vless://2a12bb81-f3a3-41bb-99ab-36febf676b4a@152.53.82.202:443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=qW8UIkS9M8F1BjbAa6Ih1kNL5hkTRDp_DZ5TEpyyIFs&security=reality&sni=shy-tiger.cdn.cachefleet.com&type=tcp#%F0%9F%87%BA%F0%9F%87%B8%20US%20netcup%20%231%20%40VPNine1
 socks5://212.58.132.5:1080#%F0%9F%87%BA%F0%9F%87%B8%20US%20NSFOCUS%20%232%20%40VPNine1
 socks5://test123:test123@38.110.1.149:1080#%F0%9F%87%BA%F0%9F%87%B8%20US%20GTHost%20%233%20%40VPNine1
@@ -119,4 +120,3 @@ socks5://65.109.191.98:3080#%F0%9F%87%AB%F0%9F%87%AE%20FI%20Hetzner%20Online%20%
 socks5://193.221.203.192:1080#%F0%9F%87%AB%F0%9F%87%AE%20FI%20Baykov%20Ilya%20Ser%20%232%20%40VPNine1
 socks5://test123:test123@169.255.56.148:1080#%F0%9F%87%AC%F0%9F%87%AD%20GH%20Host%20Africa%20%28Pt%20%231%20%40VPNine1
 socks5://212.77.75.25:1088#%F0%9F%87%AE%F0%9F%87%B9%20IT%20Uan%20Company%20S.r%20%231%20%40VPNine1
-trojan://Masir_Sefid@Masir_Sefid:443?security=reality&pbk=w0XepGv1Hk0gBh1Apiw-nvn8SfzjWcDuxdxN1mpaF3g&headerType=none&fp=chrome&spx=%2FzyKRb3NaP9Ee0j4&type=tcp&sni=store.steampowered.com&sid=6ced01fc4aa417#%F0%9F%8F%B4%20UN%20Unknown%20%231%20%40VPNine1
